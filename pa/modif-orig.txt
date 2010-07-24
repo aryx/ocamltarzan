@@ -1,0 +1,42 @@
+Many pa_xxx coming from different projects.
+
+on sexp:
+ - just generate the sexp_of_xxx (not the xxx_of_sexp) first
+ - then do both, but splitted in ofv and vof, or sof and ofs,
+   because it makes the code easier to understand, and in some
+   cases you just need one of the variant (especially the sof,
+   which is useful just to debuging, as it is a show).
+   Note that this split makes sense probably only because we use
+   camlp4 in the ocamltarzan way, so we actually see the code, 
+   and its dependencies. So it's better to be able to generate
+   only a portion of the code (that may have less dependencies).
+ - add suffix with a ':' things that are a field record
+ - removed the generator for signatures
+ - removed the code that deals with sexp_option annotation
+   (dont know what it is)
+ - remove the code to handle lowercase constructor
+
+Can override Conv.sexp_of_string 
+and add '' around strings. 
+
+
+on p4_type:
+ - removed the Int of ...
+ - added support for polymorphic types
+   Apply of name * t
+ - removed the support to nest the value of type. Just stop
+   when see varname.  Also remove the free_vars stuff
+  => simpler generated code
+ - instead of generating some let xxx = Ext ... | Rec ..., 
+   I add bidings in Ocaml.htype global
+
+on p4_value:
+ - TODO removed the support for cyclic data structure
+   => simpler generated code
+ - but p4_value not good enough as it does not handle
+   polymorphic stuff. He does not have the ofa ofb 
+   args of sexplib, so simpler to rewrite a pa_vof by
+   copy pasting sexplib instead of p4_value
+
+
+

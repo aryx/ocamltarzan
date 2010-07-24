@@ -1,0 +1,22 @@
+conv.cmi: sexp.cmi 
+parser.cmi: type.cmo 
+path.cmi: sexp.cmi 
+sexp.cmi: sexp_intf.cmo 
+conv.cmo: sexp.cmi conv.cmi 
+conv.cmx: sexp.cmx conv.cmi 
+conv_error.cmo: sexp.cmi conv.cmi 
+conv_error.cmx: sexp.cmx conv.cmx 
+lexer.cmo: parser.cmi 
+lexer.cmx: parser.cmx 
+parser.cmo: type.cmo parser.cmi 
+parser.cmx: type.cmx parser.cmi 
+path.cmo: sexp.cmi path.cmi 
+path.cmx: sexp.cmx path.cmi 
+pre_sexp.cmo: type.cmo parser.cmi lexer.cmo 
+pre_sexp.cmx: type.cmx parser.cmx lexer.cmx 
+sexp.cmo: pre_sexp.cmo sexp.cmi 
+sexp.cmx: pre_sexp.cmx sexp.cmi 
+sexp_intf.cmo: type.cmo pre_sexp.cmo 
+sexp_intf.cmx: type.cmx pre_sexp.cmx 
+type.cmo: 
+type.cmx: 

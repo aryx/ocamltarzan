@@ -1,0 +1,5 @@
+
+ - Richard Jones for his dumper module, 
+ - Jane Street for the backtrace module and lib-sexp
+ - Martin Jambon, Mika Illouz and Gert Stolpmann for lib-json
+ - Thomas Gazagnaire for pa_type.ml
