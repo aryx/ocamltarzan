@@ -9,8 +9,8 @@ OCAMLDEP=ocamldep -pp "camlp4orf " -I +camlp4
 # by ocamltarzan after.
 TARGET=fakelib
 
-SRC=pa_type_conv.ml \
-    pa_xxx_of.ml \
+SRC= pa_type_conv.ml \
+     pa_xxx_of.ml \
      pa_sexp_conv.ml pa_bin_prot.ml \
      type.ml pa_type.ml \
      pa_value.ml \
@@ -20,7 +20,6 @@ SRC=pa_type_conv.ml \
      pa_vof.ml pa_ofv.ml  pa_tof.ml \
      pa_matcher.ml \
      pa_json_of.ml
-
 
 #inlined in pa_value.ml: p4_value.ml
 #inlined in pa_type.ml:  p4_type.ml

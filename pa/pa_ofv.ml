@@ -200,7 +200,8 @@ module Generate_of_sexp = struct
     let n = string_of_int (List.length fps) in
     `Match
       <:match_case<
-          Sexp.List $Gen.mk_patt_lst _loc patts$ ->
+          (* todo? good ? Ocaml.VTuple instead ? *)
+          Ocaml.VList $Gen.mk_patt_lst _loc patts$ ->
             let $bindings$ in
             ( $tup:exCom_of_list vars$ )
         | sexp -> Ocaml.tuple_of_size_n_expected _loc $int:n$ sexp
