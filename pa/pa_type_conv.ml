@@ -1,35 +1,28 @@
 (*pp camlp4orf *)
 
-(* File: pa_type_conv.ml
-
-    Copyright (C) 2005-
-
-      Jane Street Holding, LLC
-      Author: Markus Mottl
-      email: mmottl\@janestcapital.com
-      WWW: http://www.janestcapital.com/ocaml
-
-   This file is derived from file "pa_tywith.ml" of version 0.45 of the
-   library "Tywith".
-
-   Tywith is Copyright (C) 2004, 2005 by
-
-      Martin Sandin  <msandin@hotmail.com>
-
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
-
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this library; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*)
+(******************************************************************************
+ *                             Type-conv                                      *
+ *                                                                            *
+ * Copyright (C) 2005- Jane Street Holding, LLC                               *
+ *    Contact: opensource@janestreet.com                                      *
+ *    WWW: http://www.janestreet.com/ocaml                                    *
+ *    Author: Markus Mottl                                                    *
+ *                                                                            *
+ * This library is free software; you can redistribute it and/or              *
+ * modify it under the terms of the GNU Lesser General Public                 *
+ * License as published by the Free Software Foundation; either               *
+ * version 2 of the License, or (at your option) any later version.           *
+ *                                                                            *
+ * This library is distributed in the hope that it will be useful,            *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU          *
+ * Lesser General Public License for more details.                            *
+ *                                                                            *
+ * You should have received a copy of the GNU Lesser General Public           *
+ * License along with this library; if not, write to the Free Software        *
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA  *
+ *                                                                            *
+ ******************************************************************************)
 
 (* Pa_type_conv: Preprocessing Module for Registering Type Conversions *)
 
@@ -51,6 +44,7 @@ let get_loc_err loc msg =
     (Loc.stop_off loc - Loc.stop_bol loc)
     msg
 
+(* To be deleted once the OCaml team fixes Mantis issue #4751. *)
 let hash_variant str =
   let acc_ref = ref 0 in
   for i = 0 to String.length str - 1 do
@@ -102,19 +96,18 @@ let pop_conv_path () =
 
 (* Generator registration *)
 
-module GeneratorMap = Map.Make (String)
 
 (* Map of "with"-generators for types in structures *)
-let generators = ref GeneratorMap.empty
+let generators = Hashtbl.create 0
 
 (* Map of "with"-generators for types in signatures *)
-let sig_generators = ref GeneratorMap.empty
+let sig_generators = Hashtbl.create 0
 
 (* Map of "with"-generators for exceptions in structures *)
-let exn_generators = ref GeneratorMap.empty
+let exn_generators = Hashtbl.create 0
 
 (* Map of "with"-generators for exceptions in signatures *)
-let sig_exn_generators = ref GeneratorMap.empty
+let sig_exn_generators = Hashtbl.create 0
 
 (* Check that there is no argument for generators that do not expect
    arguments *)
@@ -130,14 +123,19 @@ let parse_with entry = function
       Some (Gram.parse_tokens_after_filter entry (Stream.of_list tokens))
   | None -> None
 
-(* Entry which ignore its input *)
+(* Entry which ignores its input *)
 let ignore_tokens = Gram.Entry.of_parser "ignore_tokens" ignore
+
+(* Add new generator, fail if already defined *)
+let safe_add_gen gens id entry e =
+  if Hashtbl.mem gens id then
+    failwith ("Pa_type_conv: generator '" ^ id ^ "' defined multiple times")
+  else Hashtbl.add gens id (fun typ arg -> e typ (parse_with entry arg))
 
 (* Register a "with"-generator for types in structures *)
 let add_generator_with_arg ?(is_exn = false) id entry e =
   let gens = if is_exn then exn_generators else generators in
-  gens :=
-    GeneratorMap.add id (fun typ arg -> e typ (parse_with entry arg)) !gens
+  safe_add_gen gens id entry e
 
 let add_generator ?is_exn id e =
   add_generator_with_arg ?is_exn id ignore_tokens (no_arg id e)
@@ -145,13 +143,12 @@ let add_generator ?is_exn id e =
 (* Removes a "with"-generator for types in structures *)
 let rm_generator ?(is_exn = false) id =
   let gens = if is_exn then exn_generators else generators in
-  gens := GeneratorMap.remove id !gens
+  Hashtbl.remove gens id
 
 (* Register a "with"-generator for types in signatures *)
 let add_sig_generator_with_arg ?(is_exn = false) id entry e =
   let gens = if is_exn then sig_exn_generators else sig_generators in
-  gens :=
-    GeneratorMap.add id (fun typ arg -> e typ (parse_with entry arg)) !gens
+  safe_add_gen gens id entry e
 
 let add_sig_generator ?is_exn id e =
   add_sig_generator_with_arg ?is_exn id ignore_tokens (no_arg id e)
@@ -159,7 +156,7 @@ let add_sig_generator ?is_exn id e =
 (* Removes a "with"-generator for types in signatures *)
 let rm_sig_generator ?(is_exn = false) id =
   let gens = if is_exn then sig_exn_generators else sig_generators in
-  gens := GeneratorMap.remove id !gens
+  Hashtbl.remove gens id
 
 
 (* General purpose code generation module *)
@@ -204,6 +201,7 @@ module Gen = struct
     let rec loop = function
       | <:ctyp< private $tp$ >> -> loop tp
       | <:ctyp< [ $alts$ ] >> -> sum _loc alts
+      | <:ctyp< [< $row_fields$ ] >> | <:ctyp< [> $row_fields$ ] >>
       | <:ctyp< [= $row_fields$ ] >> -> variants _loc row_fields
       | <:ctyp< $id:_$ >>
       | <:ctyp< ( $tup:_$ ) >>
@@ -243,6 +241,7 @@ module Gen = struct
       | <:ctyp< [ $tp$ ] >>
       | <:ctyp< $_$ : $tp$ >>
       | <:ctyp< ~ $_$ : $tp$ >>
+      | <:ctyp< ? $_$ : $tp$ >>
       | <:ctyp< mutable $tp$ >>
       | <:ctyp< $_$ of $tp$ >>
       | <:ctyp< [< $tp$ ] >> | <:ctyp< [> $tp$ ] >> | <:ctyp< [= $tp$ ] >>
@@ -270,7 +269,7 @@ end
 (* Functions for interpreting derivation types *)
 
 let generate tp (drv_id, drv_arg) =
-  try GeneratorMap.find drv_id !generators tp drv_arg
+  try Hashtbl.find generators drv_id tp drv_arg
   with Not_found ->
     failwith (
       "Pa_type_conv: '" ^ drv_id ^ "' is not a supported type generator.")
@@ -280,7 +279,7 @@ let gen_derived_defs _loc tp drvs =
   List.fold_right coll drvs <:str_item< >>
 
 let generate_exn tp (drv_id, drv_arg) =
-  try GeneratorMap.find drv_id !exn_generators tp drv_arg
+  try Hashtbl.find exn_generators drv_id tp drv_arg
   with Not_found ->
     failwith (
       "Pa_type_conv: '" ^ drv_id ^ "' is not a supported exception generator.")
@@ -290,7 +289,7 @@ let gen_derived_exn_defs _loc tp drvs =
   List.fold_right coll drvs <:str_item< >>
 
 let sig_generate tp (drv_id, drv_arg) =
-  try GeneratorMap.find drv_id !sig_generators tp drv_arg
+  try Hashtbl.find sig_generators drv_id tp drv_arg
   with Not_found ->
     failwith (
       "Pa_type_conv: '" ^ drv_id ^ "' is not a supported signature generator.")
@@ -300,7 +299,7 @@ let gen_derived_sigs _loc tp drvs =
   List.fold_right coll drvs (SgNil _loc)
 
 let sig_exn_generate tp (drv_id, drv_arg) =
-  try GeneratorMap.find drv_id !sig_exn_generators tp drv_arg
+  try Hashtbl.find sig_exn_generators drv_id tp drv_arg
   with Not_found ->
     failwith (
       "Pa_type_conv: '" ^ drv_id ^ "' is not a supported signature generator.")
@@ -314,10 +313,34 @@ let gen_derived_exn_sigs _loc tp drvs =
 
 open Syntax
 
+let is_prefix ~prefix x =
+  let prefix_len = String.length prefix in
+  String.length x >= prefix_len && prefix = String.sub x 0 prefix_len
+
+let chop_prefix ~prefix x =
+  if is_prefix ~prefix x then
+    let prefix_len = String.length prefix in
+    Some (String.sub x prefix_len (String.length x - prefix_len))
+  else None
+
+let get_default_path _loc =
+  try
+    let prefix = Sys.getenv "TYPE_CONV_ROOT" in
+    match chop_prefix ~prefix (Loc.file_name (Loc.make_absolute _loc)) with
+    | Some x -> x ^ "#"
+    | None -> Loc.file_name _loc
+  with _ -> Loc.file_name _loc
+
+let set_conv_path_if_not_set _loc =
+  if !conv_path_ref = Not_initialized || !Sys.interactive then
+    let conv_path = get_default_path _loc in
+    conv_path_ref := Path (conv_path, [conv_path])
+
 let found_module_name =
   Gram.Entry.of_parser "found_module_name" (fun strm ->
     match Stream.npeek 1 strm with
-    | [(UIDENT name, _)] ->
+    | [(UIDENT name, token_info)] ->
+        set_conv_path_if_not_set (Gram.token_location token_info);
         push_conv_path name;
         Stream.junk strm;
         name
@@ -326,20 +349,20 @@ let found_module_name =
 let rec fetch_generator_arg paren_count strm =
   match Stream.next strm with
   | KEYWORD "(", _ -> fetch_generator_arg (paren_count + 1) strm
-  | KEYWORD ")", loc ->
-      if paren_count = 1 then [(EOI, loc)]
+  | KEYWORD ")", token_info ->
+      if paren_count = 1 then [(EOI, token_info)]
       else fetch_generator_arg (paren_count - 1) strm
-  | EOI, loc -> Loc.raise loc (Stream.Error "')' missing")
+  | EOI, token_info ->
+      Loc.raise (Gram.token_location token_info) (Stream.Error "')' missing")
   | x -> x :: fetch_generator_arg paren_count strm
 
 let generator_arg =
-  Gram.Entry.of_parser "generator_arg"
-    (fun strm ->
-       match Stream.peek strm with
-       | Some(KEYWORD "(", _) ->
-           Stream.junk strm;
-           Some (fetch_generator_arg 1 strm)
-       | _ -> None)
+  Gram.Entry.of_parser "generator_arg" (fun strm ->
+    match Stream.peek strm with
+    | Some (KEYWORD "(", _) ->
+        Stream.junk strm;
+        Some (fetch_generator_arg 1 strm)
+    | _ -> None)
 
 DELETE_RULE Gram str_item: "module"; a_UIDENT; module_binding0 END;
 
@@ -347,47 +370,49 @@ EXTEND Gram
   GLOBAL: str_item sig_item;
 
   str_item:
-  [[
-    "TYPE_CONV_PATH"; conv_path = STRING ->
-      set_conv_path conv_path;
-      <:str_item< >>
-  ]];
+    [[
+      "TYPE_CONV_PATH"; conv_path = STRING ->
+        set_conv_path conv_path;
+        <:str_item< >>
+    ]];
 
   generator: [[ id = LIDENT; arg = generator_arg -> (id, arg) ]];
 
   str_item:
-   [[
-     "type"; tds = type_declaration; "with";
-     drvs = LIST1 generator SEP "," ->
-       <:str_item< type $tds$; $gen_derived_defs _loc tds drvs$ >>
-  ]];
+    [[
+      "type"; tds = type_declaration; "with"; drvs = LIST1 generator SEP "," ->
+        set_conv_path_if_not_set _loc;
+        <:str_item< type $tds$; $gen_derived_defs _loc tds drvs$ >>
+    ]];
 
   str_item:
-   [[
-     "exception"; tds = constructor_declaration; "with";
-     drvs = LIST1 generator SEP "," ->
-       <:str_item< exception $tds$; $gen_derived_exn_defs _loc tds drvs$ >>
-  ]];
+    [[
+      "exception"; tds = constructor_declaration; "with";
+      drvs = LIST1 generator SEP "," ->
+        set_conv_path_if_not_set _loc;
+        <:str_item< exception $tds$; $gen_derived_exn_defs _loc tds drvs$ >>
+    ]];
 
   sig_item:
-   [[
-     "type"; tds = type_declaration; "with";
-     drvs = LIST1 generator SEP "," ->
-       <:sig_item< type $tds$; $gen_derived_sigs _loc tds drvs$ >>
-  ]];
+    [[
+      "type"; tds = type_declaration; "with"; drvs = LIST1 generator SEP "," ->
+        set_conv_path_if_not_set _loc;
+        <:sig_item< type $tds$; $gen_derived_sigs _loc tds drvs$ >>
+    ]];
 
   sig_item:
    [[
      "exception"; cd = constructor_declaration; "with";
      drvs = LIST1 generator SEP "," ->
+       set_conv_path_if_not_set _loc;
        <:sig_item< exception $cd$; $gen_derived_exn_sigs _loc cd drvs$ >>
-  ]];
+    ]];
 
   str_item:
-  [[
-    "module"; i = found_module_name; mb = module_binding0 ->
-      pop_conv_path ();
-      <:str_item< module $i$ = $mb$ >>
-  ]];
+    [[
+      "module"; i = found_module_name; mb = module_binding0 ->
+        pop_conv_path ();
+        <:str_item< module $i$ = $mb$ >>
+    ]];
 
 END
