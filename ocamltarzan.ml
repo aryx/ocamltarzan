@@ -63,6 +63,7 @@ let cmd file =
 
     | "vi" -> "pa_visitor.cmo"
     | "map" -> "pa_map.cmo"
+    | "iter_env" -> "pa_iter_env.cmo"
 
     | "tof" -> "pa_tof.cmo" (* was type.cmo pa_type.cmo *)
 
