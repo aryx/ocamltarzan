@@ -1,20 +1,18 @@
-MAKESUBDIRS=lib-sexp pa
 
-#pa
-#TARGET=ocamltarzan
+MAKESUBDIRS=lib-sexp pa
 
 all:
 	$(MAKE) rec 
 	$(MAKE) ocamltarzan
-
 opt: 
 	$(MAKE) rec.opt
-all.opt: opt
 
+INCLUDES=-I external/commons
+LIBS=external/commons/commons.cma
+SYSLIBS=unix.cma str.cma
 
-ocamltarzan: ocamltarzan.ml common.ml
-	ocamlc -o $@ unix.cma str.cma common.ml ocamltarzan.ml 
-#	ocamlc -o $@ -I ../commons unix.cma str.cma ../commons/commons.cma ocamltarzan.ml 
+ocamltarzan: ocamltarzan.ml 
+	ocamlc -o $@ -custom $(INCLUDES) $(SYSLIBS) $(LIBS)  ocamltarzan.ml 
 clean::
 	rm -f ocamltarzan
 
@@ -38,4 +36,3 @@ test:
 	./ocamltarzan -choice tof tests/expr.ml
 	echo "testing vof"
 	./ocamltarzan -choice vof tests/expr.ml
-
