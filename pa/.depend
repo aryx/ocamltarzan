@@ -1,5 +1,4 @@
 pa_bin_prot.cmi: 
-pa_map.cmi: 
 pa_sexp_conv.cmi: 
 pa_type_conv.cmi: 
 pa_visitor.cmi: 
@@ -7,8 +6,10 @@ Pa_example.cmo: pa_type_conv.cmi
 Pa_example.cmx: pa_type_conv.cmx 
 pa_bin_prot.cmo: pa_type_conv.cmi pa_bin_prot.cmi 
 pa_bin_prot.cmx: pa_type_conv.cmx pa_bin_prot.cmi 
-pa_map.cmo: pa_type_conv.cmi pa_map.cmi 
-pa_map.cmx: pa_type_conv.cmx pa_map.cmi 
+pa_json_of.cmo: pa_type_conv.cmi 
+pa_json_of.cmx: pa_type_conv.cmx 
+pa_map.cmo: pa_type_conv.cmi 
+pa_map.cmx: pa_type_conv.cmx 
 pa_matcher.cmo: 
 pa_matcher.cmx: 
 pa_ofs.cmo: pa_type_conv.cmi 
