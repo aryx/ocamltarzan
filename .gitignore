@@ -1,3 +1,6 @@
+*.annot
+*.cm*
+
 /ocamltarzan
 /lib-sexp/lexer.ml
 /lib-sexp/parser.ml
