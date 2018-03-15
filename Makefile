@@ -1,15 +1,15 @@
 
 MAKESUBDIRS=lib-sexp pa
 
+INCLUDES=-I external/commons
+LIBS=external/commons/commons.cma
+SYSLIBS=unix.cma str.cma
+
 all:
 	$(MAKE) rec 
 	$(MAKE) ocamltarzan
 opt: 
 	$(MAKE) rec.opt
-
-INCLUDES=-I external/commons
-LIBS=external/commons/commons.cma
-SYSLIBS=unix.cma str.cma
 
 ocamltarzan: ocamltarzan.ml 
 	ocamlc -o $@ -custom $(INCLUDES) $(SYSLIBS) $(LIBS)  ocamltarzan.ml 
