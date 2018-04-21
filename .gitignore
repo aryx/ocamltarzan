@@ -1,8 +1,15 @@
-*.annot
-*.cm*
 
+# ocaml objects
+*.cm*
+*.annot
+
+# binaries
 /ocamltarzan
+
+# parsers
 /lib-sexp/lexer.ml
 /lib-sexp/parser.ml
 /lib-sexp/parser.mli
 /lib-sexp/parser.output
+
+# ????
