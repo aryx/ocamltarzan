@@ -26,7 +26,7 @@ TARGETPACK=sexplib
 # Generic variables
 ##############################################################################
 
-INCLUDES=
+INCLUDES=-I +num
 #-I +camlp4
 SYSLIBS= str.cma unix.cma bigarray.cma num.cma
 #INCDIRS = +camlp4
@@ -64,7 +64,7 @@ SYSLIBS= str.cma unix.cma bigarray.cma num.cma
 ##############################################################################
 
 #dont use -custom, it makes the bytecode unportable.
-OCAMLCFLAGS= -g -dtypes # -w A
+OCAMLCFLAGS= -g -dtypes -unsafe-string # -w A
 #-for-pack Sexplib
 
 # This flag is also used in subdirectories so don't change its name here.

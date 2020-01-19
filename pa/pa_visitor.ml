@@ -87,12 +87,14 @@ let unroll_fun_matches _loc fp1 fp2 =
 (* ugly: because of the monormphic restriction I have to do some trick
  * to generate the right visitor for polymorphic type (e.g.
  * v_wrap2, v_wrap3, etc. See visitor_php.ml for instance.
+ * update: no more needed thx to forall now possible on nested function.
  *)
 let h = Hashtbl.create 101
 
 (* Generator for converters of OCaml-values to S-expressions *)
 module Generate_sexp_of = struct
   let mk_abst_call _loc tn rev_path =
+(*
     match tn with
     | "wrap" | "paren" | "brace" | "bracket" 
     | "comma_list" | "and_list" | "pipe_list" | "semicolon_list" 
@@ -111,6 +113,7 @@ module Generate_sexp_of = struct
         <:expr< $id:Gen.ident_of_rev_path _loc (("v_" ^ tn ^ s) :: rev_path)$ >>
         
     | _ ->
+*)
         <:expr< $id:Gen.ident_of_rev_path _loc (("v_" ^ tn) :: rev_path)$ >>
 
   (* Conversion of type paths *)

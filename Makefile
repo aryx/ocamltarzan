@@ -2,7 +2,7 @@
 MAKESUBDIRS=lib-sexp pa
 
 INCLUDES=-I external/commons
-LIBS=external/commons/commons.cma
+LIBS=external/commons/lib.cma
 SYSLIBS=unix.cma str.cma
 
 all:
@@ -12,7 +12,7 @@ opt:
 	$(MAKE) rec.opt
 
 ocamltarzan: ocamltarzan.ml 
-	ocamlc -o $@ -custom $(INCLUDES) $(SYSLIBS) $(LIBS)  ocamltarzan.ml 
+	ocamlc -unsafe-string -o $@ -custom $(INCLUDES) $(SYSLIBS) $(LIBS)  ocamltarzan.ml 
 clean::
 	rm -f ocamltarzan
 
