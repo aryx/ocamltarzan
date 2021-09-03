@@ -61,7 +61,10 @@ let cmd file =
     | "sof" -> "pa_sof.cmo" (* aka show *)
     | "ofs" -> "pa_ofs.cmo" (* aka read *)
 
-    | "vi" -> "pa_visitor.cmo"
+    (* used to be vi, but then works less with the regexp
+     * using !choice below in grouped' *)
+     
+    | "v" -> "pa_visitor.cmo"
     | "map" -> "pa_map.cmo"
     | "iter_env" -> "pa_iter_env.cmo"
 
@@ -118,6 +121,8 @@ let main_action file =
     || x =~ ".*bin_read_.*" || x =~ ".*bin_size_.*" 
     || x =~ ".*bin_write_.*" || x =~ ".*bin_sw.*"
 
+    || x =~ (".*map_.*")
+                                         
     || x =~ (".*" ^ !choice ^ "_.*")
     || x =~ (".*_" ^ !choice ^ ".*")
   )

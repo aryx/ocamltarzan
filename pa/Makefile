@@ -16,7 +16,7 @@ SRC= pa_type_conv.ml \
      pa_value.ml \
      pa_rpc.ml \
      pa_sof.ml pa_ofs.ml \
-     pa_visitor.ml pa_map.ml pa_iter_env.ml \
+     pa_visitor.ml pa_map.ml pa_map_todo.ml pa_iter_env.ml \
      pa_vof.ml pa_ofv.ml  pa_tof.ml \
      pa_matcher.ml \
      pa_json_of.ml
