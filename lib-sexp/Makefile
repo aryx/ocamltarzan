@@ -66,6 +66,7 @@ SYSLIBS= str.cma unix.cma bigarray.cma num.cma
 #dont use -custom, it makes the bytecode unportable.
 OCAMLCFLAGS= -g -dtypes -unsafe-string # -w A
 #-for-pack Sexplib
+#-unsafe-string not available in 4.12
 
 # This flag is also used in subdirectories so don't change its name here.
 OPTFLAGS=
