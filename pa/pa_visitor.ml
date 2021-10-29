@@ -358,7 +358,7 @@ end
 (* Add "of_sexp" and "sexp_of" as "sexp" to the set of generators *)
 let () =
   add_generator
-    "vi"
+    "visitor"
     (fun tds ->
       let _loc = Loc.ghost in
       <:str_item<
