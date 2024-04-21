@@ -1,3 +1,7 @@
+DEPRECATED: you should use otarzan instead of ocamltarzan!!!
+otarzan is currently included in the semgrep codebase,
+see https://github.com/semgrep/semgrep/tree/develop/tools/otarzan
+
 Motivations: 
 --------------------
 

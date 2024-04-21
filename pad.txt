@@ -1,0 +1,4 @@
+This is deprecated, you should use otarzan instead in semgrep.
+
+Note that this currently requires OCaml 4.09.1 as the external/opam_lib
+symlink indicate.
